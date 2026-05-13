@@ -64,6 +64,14 @@ select option{background:#111}
     <input id="tel" type="tel" placeholder="06 ...">
   </div>
 </div>
+<div class="field">
+  <label>WhatsApp disponible ?</label>
+  <div class="tags">
+    <span class="tag" id="wa-tag" onclick="toggleWA()">
+      📱 Envoyer sur WhatsApp aussi
+    </span>
+  </div>
+</div>
 
 <div class="row">
   <div class="field">
@@ -121,6 +129,12 @@ select option{background:#111}
 
 <script>
 let note = 0;
+let whatsappActif = false;
+
+function toggleWA() {
+  whatsappActif = !whatsappActif;
+  document.getElementById('wa-tag').classList.toggle('on', whatsappActif);
+}
 let problemes = [];
 
 document.querySelectorAll('.star').forEach(b => {
@@ -144,15 +158,16 @@ document.querySelectorAll('.tag').forEach(t => {
 
 async function envoyer() {
   const payload = {
-    nom: document.getElementById('nom').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    tel: document.getElementById('tel').value.trim(),
-    ville: document.getElementById('ville').value.trim(),
-    secteur: document.getElementById('secteur').value,
-    note,
-    problemes,
-    notes: document.getElementById('notes').value.trim(),
-  };
+  nom: document.getElementById('nom').value.trim(),
+  email: document.getElementById('email').value.trim(),
+  tel: document.getElementById('tel').value.trim(),
+  ville: document.getElementById('ville').value.trim(),
+  secteur: document.getElementById('secteur').value,
+  note,
+  problemes,
+  notes: document.getElementById('notes').value.trim(),
+  whatsapp: whatsappActif,
+};
 
   if (!payload.nom || (!payload.email && !payload.tel)) {
     document.getElementById('status').textContent = 'Nom + email ou téléphone requis.';
@@ -165,21 +180,33 @@ async function envoyer() {
   btn.disabled = true;
   document.getElementById('status').textContent = '';
 
-  try {
-    const res = await fetch('http://localhost:3000/prospect', {
+ try {
+    const res = await fetch('https://fluffy-guacamole-v6xg496pwp9q2695g-3000.app.github.dev/prospect', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+  'Content-Type': 'application/json',
+  'x-api-key': 'ikreet-secret-2026-xK9mP3qR'
+},
       body: JSON.stringify(payload)
     });
-    if (res.ok) {
-      document.getElementById('status').textContent = 'Prospect envoyé — prospection lancée !';
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      document.getElementById('status').textContent = '✅ Email + SMS envoyés !' + (payload.whatsapp ? ' WhatsApp programmé dans 6h.' : ' RVM programmé dans 6h.');
       document.getElementById('status').className = 'status ok';
-      btn.textContent = 'Envoyé';
+      btn.textContent = '✅ Envoyé !';
+      // Reset du formulaire après 3 secondes
+      setTimeout(() => {
+        btn.textContent = 'Lancer la prospection';
+        btn.disabled = false;
+        document.getElementById('status').textContent = '';
+      }, 4000);
     } else {
-      throw new Error('Erreur serveur');
+      throw new Error(data.error || 'Erreur serveur');
     }
-  } catch {
-    document.getElementById('status').textContent = 'Serveur non joignable — vérifie que le backend tourne.';
+  } catch (err) {
+    document.getElementById('status').textContent = '❌ ' + (err.message || 'Serveur non joignable');
     document.getElementById('status').className = 'status err';
     btn.textContent = 'Lancer la prospection';
     btn.disabled = false;
