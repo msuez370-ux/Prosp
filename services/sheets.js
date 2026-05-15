@@ -1,10 +1,15 @@
 const { google } = require('googleapis');
 
 async function sauvegarderProspect(prospect, messages) {
+  // Gère les deux formats de clé privée (avec \n littéraux ou vrais sauts de ligne)
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY.includes('\\n')
+    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    : process.env.GOOGLE_PRIVATE_KEY;
+
   const auth = new google.auth.JWT(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     null,
-    process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    privateKey,
     ['https://www.googleapis.com/auth/spreadsheets']
   );
 
@@ -27,7 +32,7 @@ async function sauvegarderProspect(prospect, messages) {
         (prospect.problemes || []).join(', '),
         messages.email_objet,
         messages.email_corps,
-        messages.sms,
+        messages.sms || '',
         'Envoyé'
       ]]
     }
