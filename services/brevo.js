@@ -15,8 +15,7 @@ function construireEmailHTML(emailCorps) {
     .replace(/\n/g, '<br>')
     .replace(/•/g, '&bull;');
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -47,41 +46,25 @@ function construireEmailHTML(emailCorps) {
           <!-- SIGNATURE -->
           <tr>
             <td style="background:#ffffff;padding:0 30px 30px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="border-top:2px solid #1a3a5c;padding-top:20px;margin-top:10px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding-top:20px;">
+                  <td style="border-top:2px solid #1a3a5c;padding-top:20px;">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td style="padding-right:20px;vertical-align:middle;">
                           <img src="${LOGO_URL}" alt="IKREET" width="100" style="display:block;">
                         </td>
                         <td style="vertical-align:middle;border-left:3px solid #f97316;padding-left:16px;">
-                          <p style="margin:0;font-size:15px;font-weight:bold;color:#1a3a5c;">
-                            Mohamed Boussari
-                          </p>
-                          <p style="margin:3px 0 0;font-size:12px;color:#888;">
-                            Agence IKREET — Sites web & Réputation en ligne
-                          </p>
+                          <p style="margin:0;font-size:15px;font-weight:bold;color:#1a3a5c;">Mohamed Boussari</p>
+                          <p style="margin:3px 0 0;font-size:12px;color:#888;">Agence IKREET — Sites web & Réputation en ligne</p>
                           <p style="margin:10px 0 0;font-size:13px;color:#1a3a5c;">
-                            📞 <a href="tel:+33748338443"
-                              style="color:#1a3a5c;text-decoration:none;font-weight:bold;">
-                              07 48 33 84 43
-                            </a>
+                            📞 <a href="tel:+33748338443" style="color:#1a3a5c;text-decoration:none;font-weight:bold;">07 48 33 84 43</a>
                           </p>
                           <p style="margin:4px 0 0;font-size:13px;">
-                            ✉️ <a href="mailto:contact@mohamed-boussari.fr"
-                              style="color:#f97316;text-decoration:none;font-weight:bold;">
-                              contact@mohamed-boussari.fr
-                            </a>
+                            ✉️ <a href="mailto:contact@mohamed-boussari.fr" style="color:#f97316;text-decoration:none;font-weight:bold;">contact@mohamed-boussari.fr</a>
                           </p>
                           <p style="margin:10px 0 0;">
-                            <a href="https://mohamed-boussari.fr"
-                              style="display:inline-block;background:#1a3a5c;color:#ffffff;
-                              padding:7px 16px;border-radius:4px;font-size:12px;
-                              text-decoration:none;font-weight:bold;">
-                              🌐 mohamed-boussari.fr
-                            </a>
+                            <a href="https://mohamed-boussari.fr" style="display:inline-block;background:#1a3a5c;color:#ffffff;padding:7px 16px;border-radius:4px;font-size:12px;text-decoration:none;font-weight:bold;">🌐 mohamed-boussari.fr</a>
                           </p>
                         </td>
                       </tr>
@@ -94,11 +77,9 @@ function construireEmailHTML(emailCorps) {
 
           <!-- FOOTER -->
           <tr>
-            <td style="background:#f9f9f9;padding:14px 30px;border:1px solid #e0e0e0;
-              border-radius:0 0 8px 8px;text-align:center;">
+            <td style="background:#f9f9f9;padding:14px 30px;border:1px solid #e0e0e0;border-radius:0 0 8px 8px;text-align:center;">
               <p style="margin:0;font-size:10px;color:#aaa;line-height:1.5;">
-                Vous recevez cet email car votre commerce a été identifié comme pouvant bénéficier 
-                de nos services.<br>
+                Vous recevez cet email car votre commerce a été identifié comme pouvant bénéficier de nos services.<br>
                 Pour ne plus recevoir nos communications, répondez simplement <strong>STOP</strong>.
               </p>
             </td>
@@ -127,6 +108,7 @@ async function envoyerEmail(prospect, emailObjet, emailCorps) {
 
 ---
 Mohamed Boussari — Agence IKREET
+Sites web & Réputation en ligne
 Tél : 07 48 33 84 43
 Email : contact@mohamed-boussari.fr
 Site : mohamed-boussari.fr
