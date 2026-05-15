@@ -1,17 +1,21 @@
 const { google } = require('googleapis');
 
 async function sauvegarderProspect(prospect, messages) {
-  // Gère les deux formats de clé privée (avec \n littéraux ou vrais sauts de ligne)
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY.includes('\\n')
-    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
-    : process.env.GOOGLE_PRIVATE_KEY;
+  let credentials;
+  
+  try {
+    credentials = JSON.parse(
+      Buffer.from(process.env.GOOGLE_CREDENTIALS_B64, 'base64').toString('utf8')
+    );
+  } catch(e) {
+    throw new Error('Impossible de décoder GOOGLE_CREDENTIALS_B64 : ' + e.message);
+  }
 
-  const auth = new google.auth.JWT(
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    null,
-    privateKey,
-    ['https://www.googleapis.com/auth/spreadsheets']
-  );
+  const auth = new google.auth.JWT({
+    email: credentials.client_email,
+    key: credentials.private_key,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+  });
 
   const sheets = google.sheets({ version: 'v4', auth });
   const now = new Date().toLocaleString('fr-FR');
