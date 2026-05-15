@@ -11,6 +11,7 @@ const { envoyerWhatsApp } = require('./services/whatsapp');
 const { sauvegarderProspect } = require('./services/sheets');
 const { ajouterJob } = require('./services/queue');
 const { demarrerCron } = require('./services/cron');
+const { envoyerRVM, callAudioMap } = require('./services/rvm');
 
 const app = express();
 
@@ -89,18 +90,47 @@ app.post('/prospect', async (req, res) => {
   }
 });
 
-// ── Routes TwiML ──
+// ── Route TwiML — Twilio appelle cette URL au début de l'appel ──
 app.get('/twiml/rvm', (req, res) => {
   const twiml = new VoiceResponse();
-  twiml.play(req.query.audio);
-  twiml.hangup();
+  twiml.pause({ length: 45 }); // Silence pendant que AMD analyse
   res.type('text/xml');
   res.send(twiml.toString());
 });
 
-app.post('/twiml/amd-callback', (req, res) => {
-  console.log(`📞 AMD — répondu par : ${req.body.AnsweredBy}`);
-  res.sendStatus(200);
+// ── Callback AMD — Twilio nous dit si c'est humain ou messagerie ──
+app.post('/twiml/amd-callback', async (req, res) => {
+  const { AnsweredBy, CallSid } = req.body;
+  console.log(`📞 AMD — ${CallSid} — ${AnsweredBy}`);
+
+  const twiml = new VoiceResponse();
+  const audioUrl = callAudioMap[CallSid];
+
+  if (
+    AnsweredBy === 'machine_end_beep' ||
+    AnsweredBy === 'machine_end_silence' ||
+    AnsweredBy === 'machine_end_other'
+  ) {
+    console.log(`📱 Messagerie détectée — dépôt du message vocal`);
+    if (audioUrl) {
+      twiml.play(audioUrl);
+    } else {
+      console.log('⚠️ Pas d\'URL audio trouvée pour ce CallSid');
+    }
+    twiml.hangup();
+  } else if (AnsweredBy === 'human') {
+    console.log(`👤 Humain a décroché — raccrocher`);
+    twiml.hangup();
+  } else {
+    console.log(`❓ AMD inconnu : ${AnsweredBy} — raccrocher`);
+    twiml.hangup();
+  }
+
+  // Nettoyage mémoire
+  delete callAudioMap[CallSid];
+
+  res.type('text/xml');
+  res.send(twiml.toString());
 });
 
 // ── Démarrer le cron ──

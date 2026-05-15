@@ -181,7 +181,7 @@ async function envoyer() {
   document.getElementById('status').textContent = '';
 
  try {
-    const res = await fetch('https://fluffy-guacamole-v6xg496pwp9q2695g-3000.app.github.dev/prospect', {
+    const res = await fetch('https://prosp-production-b0a0.up.railway.app/prospect', {
       method: 'POST',
       headers: {
   'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ async function envoyer() {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      document.getElementById('status').textContent = '✅ Email + SMS envoyés !' + (payload.whatsapp ? ' WhatsApp programmé dans 6h.' : ' RVM programmé dans 6h.');
+     document.getElementById('status').textContent = '✅ Email envoyé !' + (payload.whatsapp ? ' WhatsApp programmé dans 6h.' : ' Appel vocal programmé dans 6h.');
       document.getElementById('status').className = 'status ok';
       btn.textContent = '✅ Envoyé !';
       // Reset du formulaire après 3 secondes

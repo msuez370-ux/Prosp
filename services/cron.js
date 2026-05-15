@@ -18,10 +18,10 @@ function demarrerCron() {
         }
 
         if (job.type === 'rvm') {
-          const audioUrl = `${process.env.BASE_URL}/audio/rvm_${job.id}.mp3`;
-          await genererAudio(job.messages.vocal, `rvm_${job.id}`);
-          await envoyerRVM(job.prospect, audioUrl);
-        }
+  // genererAudio retourne directement l'URL S3
+  const audioUrl = await genererAudio(job.messages.vocal, `rvm_${job.id}`);
+  await envoyerRVM(job.prospect, audioUrl);
+}
 
         marquerJobFait(job.id);
         console.log(`✅ Job ${job.type} exécuté pour ${job.prospect.nom}`);
