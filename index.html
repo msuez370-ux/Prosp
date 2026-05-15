@@ -1,215 +1,570 @@
 <!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>IKREET — Prospect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
-
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#0a0a0a;--card:#111;--border:#222;--accent:#c8f135;
-  --text:#f0f0e8;--muted:#555;--input:#161616;
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3a;
+  --accent:#c8f135;
+  --accent2:#f97316;
+  --text:#f0f0f0;
+  --muted:#666;
+  --radius:14px;
 }
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:24px 16px 40px}
-h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:4px}
-h1 span{color:var(--accent)}
-.sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:32px}
-.field{margin-bottom:18px}
-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;
+  min-height:100dvh;
+  overscroll-behavior:none;
+}
+/* Centrage sur desktop */
+@media (min-width: 600px) {
+  main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 0 120px;
+  }
+  .header {
+    padding: 20px calc(50% - 260px);
+  }
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer .btn {
+    max-width: 520px;
+  }
+  .footer .status {
+    max-width: 520px;
+  }
+}
+/* HEADER */
+.header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(10,10,15,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  padding:16px 20px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;
+  letter-spacing:2px;
+  color:var(--text);
+  line-height:1;
+}
+.logo span{color:var(--accent)}
+.badge{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:5px 12px;
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* MAIN */
+main{padding:20px 16px 120px}
+
+/* SECTION */
+.section{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:12px;
+  position:relative;
+  overflow:hidden;
+}
+.section::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  opacity:0;
+  transition:opacity .3s;
+}
+.section:focus-within::before{opacity:1}
+
+.section-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  color:var(--muted);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-label span{
+  width:18px;height:18px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  color:var(--accent);
+}
+
+/* INPUTS */
 input,select,textarea{
-  width:100%;background:var(--input);border:1px solid var(--border);
-  color:var(--text);font-family:'DM Mono',monospace;font-size:14px;
-  padding:12px 14px;border-radius:6px;outline:none;transition:border .2s;
+  width:100%;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  font-size:16px;
+  padding:14px 16px;
+  border-radius:10px;
+  outline:none;
+  transition:border-color .2s,background .2s;
   -webkit-appearance:none;
+  appearance:none;
 }
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-textarea{resize:none;height:80px}
-select option{background:#111}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stars{display:flex;gap:6px;margin-top:4px}
-.stars button{
-  background:var(--input);border:1px solid var(--border);color:var(--muted);
-  width:36px;height:36px;border-radius:6px;font-size:16px;cursor:pointer;transition:all .15s;
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);
+  background:#1e1e2a;
 }
-.stars button.on{background:#1a1a0a;border-color:var(--accent);color:var(--accent)}
-.note-label{font-size:11px;color:var(--muted);margin-top:6px;min-height:16px}
-.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:none;height:72px;line-height:1.5}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 16px center;
+  padding-right:40px;
+}
+select option{background:#12121a}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* STARS */
+.stars-row{
+  display:flex;
+  gap:8px;
+  margin-top:4px;
+}
+.star-btn{
+  flex:1;
+  height:52px;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  color:var(--muted);
+  font-size:20px;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+}
+.star-btn.on{
+  background:#1a1f0a;
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.star-label{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+  min-height:16px;
+}
+
+/* TAGS */
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:4px;
+}
+.tag{
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:13px;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .15s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.tag.on{
+  background:#1a1f0a;
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.tag-wa{
+  width:100%;
+  text-align:center;
+  font-size:14px;
+  padding:14px;
+  border-radius:10px;
+}
+.tag-wa.on{
+  background:#0a1f0a;
+  border-color:#25d366;
+  color:#25d366;
+}
+
+/* STICKY FOOTER */
+.footer{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:rgba(10,10,15,0.96);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  padding:16px;
+  border-top:1px solid var(--border);
+  z-index:100;
+}
 .btn{
-  width:100%;background:var(--accent);color:#0a0a0a;border:none;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:16px;
-  padding:16px;border-radius:8px;cursor:pointer;letter-spacing:0.5px;
-  transition:opacity .15s,transform .1s;
+  width:100%;
+  background:var(--accent);
+  color:#0a0a0f;
+  border:none;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+  padding:18px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:transform .1s,opacity .15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
 }
-.btn:active{opacity:.85;transform:scale(.98)}
-.status{margin-top:16px;text-align:center;font-size:12px;min-height:20px;color:var(--muted)}
+.btn:active{transform:scale(.97);opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.loading{background:var(--surface2);color:var(--muted)}
+.btn.success{background:#1a3a1a;color:var(--accent);border:1.5px solid var(--accent)}
+
+/* STATUS */
+.status{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  min-height:18px;
+  color:var(--muted);
+  padding:0 4px;
+}
 .status.ok{color:var(--accent)}
 .status.err{color:#ff5555}
-.tag{display:inline-block;background:var(--input);border:1px solid var(--border);border-radius:4px;font-size:10px;padding:3px 8px;color:var(--muted);margin-right:4px;margin-top:4px;cursor:pointer;transition:all .15s}
-.tag.on{background:#1a1a0a;border-color:var(--accent);color:var(--accent)}
-.tags{margin-top:6px}
+
+/* PROGRESS BAR */
+.progress{
+  height:2px;
+  background:var(--surface2);
+  border-radius:2px;
+  margin-bottom:16px;
+  overflow:hidden;
+}
+.progress-bar{
+  height:100%;
+  background:var(--accent);
+  border-radius:2px;
+  transition:width .3s ease;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.section{animation:fadeUp .3s ease both}
+.section:nth-child(1){animation-delay:.05s}
+.section:nth-child(2){animation-delay:.1s}
+.section:nth-child(3){animation-delay:.15s}
+.section:nth-child(4){animation-delay:.2s}
+.section:nth-child(5){animation-delay:.25s}
+.section:nth-child(6){animation-delay:.3s}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  width:20px;height:20px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+  display:none;
+}
+.btn.loading .spinner{display:block}
+.btn.loading .btn-text{display:none}
 </style>
+</head>
+<body>
 
-<h1>IKREET<br><span>Prospect</span></h1>
-<p class="sub">Nouveau commerce repéré</p>
-
-<div class="field">
-  <label>Nom du commerce</label>
-  <input id="nom" type="text" placeholder="Épicerie Du Moulin" autocomplete="off">
+<div class="header">
+  <div class="logo">IK<span>REET</span></div>
+  <div class="badge">Nouveau prospect</div>
 </div>
 
-<div class="row">
-  <div class="field">
-    <label>Email</label>
-    <input id="email" type="email" placeholder="contact@...">
+<main>
+  <!-- Progress -->
+  <div class="progress">
+    <div class="progress-bar" id="progress" style="width:0%"></div>
   </div>
-  <div class="field">
-    <label>Téléphone</label>
-    <input id="tel" type="tel" placeholder="06 ...">
-  </div>
-</div>
-<div class="field">
-  <label>WhatsApp disponible ?</label>
-  <div class="tags">
-    <span class="tag" id="wa-tag" onclick="toggleWA()">
-      📱 Envoyer sur WhatsApp aussi
-    </span>
-  </div>
-</div>
 
-<div class="row">
-  <div class="field">
-    <label>Ville</label>
-    <input id="ville" type="text" placeholder="Marignane">
+  <!-- 1. Nom -->
+  <div class="section">
+    <div class="section-label"><span>1</span> Commerce</div>
+    <input id="nom" type="text" placeholder="Épicerie Du Moulin"
+      autocomplete="off" autocorrect="off" spellcheck="false"
+      oninput="updateProgress()">
   </div>
-  <div class="field">
-    <label>Secteur</label>
-    <select id="secteur">
-      <option value="">-- choisir --</option>
-      <option>Épicerie / Alimentation</option>
-      <option>Restaurant / Café</option>
-      <option>Coiffure / Beauté</option>
-      <option>Garage / Auto</option>
-      <option>Boulangerie</option>
-      <option>Vêtements / Mode</option>
-      <option>Pharmacie / Santé</option>
-      <option>Autre</option>
-    </select>
+
+  <!-- 2. Contact -->
+  <div class="section">
+    <div class="section-label"><span>2</span> Contact</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="email" type="email" placeholder="Email du commerce"
+        inputmode="email" autocomplete="off" oninput="updateProgress()">
+      <input id="tel" type="tel" placeholder="Téléphone (06 ou 07...)"
+        inputmode="tel" autocomplete="off" oninput="updateProgress()">
+      <div class="tag tag-wa" id="wa-tag" onclick="toggleWA()">
+        📱 Envoyer sur WhatsApp aussi
+      </div>
+    </div>
   </div>
-</div>
 
-<div class="field">
-  <label>Note Google</label>
-  <div class="stars">
-    <button class="star" data-v="1">1</button>
-    <button class="star" data-v="2">2</button>
-    <button class="star" data-v="3">3</button>
-    <button class="star" data-v="4">4</button>
-    <button class="star" data-v="5">5</button>
+  <!-- 3. Localisation & secteur -->
+  <div class="section">
+    <div class="section-label"><span>3</span> Lieu & activité</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="ville" type="text" placeholder="Ville"
+        autocomplete="off" oninput="updateProgress()">
+      <select id="secteur" onchange="updateProgress()">
+        <option value="">Secteur d'activité</option>
+        <option>Épicerie / Alimentation</option>
+        <option>Restaurant / Café</option>
+        <option>Coiffure / Beauté</option>
+        <option>Garage / Auto</option>
+        <option>Boulangerie / Pâtisserie</option>
+        <option>Vêtements / Mode</option>
+        <option>Pharmacie / Santé</option>
+        <option>Fleuriste</option>
+        <option>Pressing / Laverie</option>
+        <option>Autre</option>
+      </select>
+    </div>
   </div>
-  <div class="note-label" id="note-label">Non renseignée</div>
-</div>
 
-<div class="field">
-  <label>Problèmes repérés</label>
-  <div class="tags">
-    <span class="tag" data-v="Mauvais avis en premier">Mauvais avis</span>
-    <span class="tag" data-v="Pas de site web">Pas de site</span>
-    <span class="tag" data-v="Fiche Google incomplète">Fiche incomplète</span>
-    <span class="tag" data-v="Peu de photos">Peu de photos</span>
-    <span class="tag" data-v="Pas de réponse aux avis">Ignore les avis</span>
+  <!-- 4. Note Google -->
+  <div class="section">
+    <div class="section-label"><span>4</span> Note Google</div>
+    <div class="stars-row">
+      <button class="star-btn" data-v="1" onclick="setNote(1)">1</button>
+      <button class="star-btn" data-v="2" onclick="setNote(2)">2</button>
+      <button class="star-btn" data-v="3" onclick="setNote(3)">3</button>
+      <button class="star-btn" data-v="4" onclick="setNote(4)">4</button>
+      <button class="star-btn" data-v="5" onclick="setNote(5)">5</button>
+    </div>
+    <div class="star-label" id="star-label">Non renseignée</div>
   </div>
+
+  <!-- 5. Problèmes -->
+  <div class="section">
+    <div class="section-label"><span>5</span> Problèmes repérés</div>
+    <div class="tags">
+      <span class="tag" data-v="Mauvais avis en premier" onclick="toggleTag(this)">😡 Mauvais avis</span>
+      <span class="tag" data-v="Pas de site web" onclick="toggleTag(this)">🌐 Pas de site</span>
+      <span class="tag" data-v="Fiche Google incomplète" onclick="toggleTag(this)">📋 Fiche incomplète</span>
+      <span class="tag" data-v="Peu de photos" onclick="toggleTag(this)">📷 Peu de photos</span>
+      <span class="tag" data-v="Pas de réponse aux avis" onclick="toggleTag(this)">🔕 Ignore les avis</span>
+    </div>
+  </div>
+
+  <!-- 6. Notes -->
+  <div class="section">
+    <div class="section-label"><span>6</span> Notes terrain (optionnel)</div>
+    <textarea id="notes" placeholder="Ex : patron sympa, vitrine bien tenue, beaucoup de passage..."></textarea>
+  </div>
+
+</main>
+
+<div class="footer">
+  <button class="btn" id="btn" onclick="envoyer()">
+    <div class="spinner"></div>
+    <span class="btn-text">🚀 LANCER LA PROSPECTION</span>
+  </button>
+  <div class="status" id="status"></div>
 </div>
-
-<div class="field">
-  <label>Notes libres (optionnel)</label>
-  <textarea id="notes" placeholder="Ex : patron sympa, vitrine bien tenue..."></textarea>
-</div>
-
-<hr class="divider">
-
-<button class="btn" onclick="envoyer()">Lancer la prospection</button>
-<div class="status" id="status"></div>
 
 <script>
+const API_URL = 'https://prosp-production-b0a0.up.railway.app/prospect';
+const API_KEY = 'ikreet-secret-2026-xK9mP3qR';
+
 let note = 0;
 let whatsappActif = false;
+let problemes = [];
+
+function setNote(n) {
+  note = n;
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.v) <= n);
+  });
+  const labels = ['','⭐ Très mauvaise','⭐⭐ Mauvaise','⭐⭐⭐ Moyenne','⭐⭐⭐⭐ Bonne','⭐⭐⭐⭐⭐ Excellente'];
+  document.getElementById('star-label').textContent = labels[n] + ' — ' + n + '/5';
+  updateProgress();
+}
 
 function toggleWA() {
   whatsappActif = !whatsappActif;
   document.getElementById('wa-tag').classList.toggle('on', whatsappActif);
 }
-let problemes = [];
 
-document.querySelectorAll('.star').forEach(b => {
-  b.onclick = () => {
-    note = parseInt(b.dataset.v);
-    document.querySelectorAll('.star').forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= note));
-    const labels = ['','Très mauvaise','Mauvaise','Moyenne','Bonne','Excellente'];
-    document.getElementById('note-label').textContent = labels[note] + ' — ' + note + '/5';
-  };
-});
+function toggleTag(el) {
+  el.classList.toggle('on');
+  const v = el.dataset.v;
+  if (el.classList.contains('on')) {
+    problemes = [...problemes, v];
+  } else {
+    problemes = problemes.filter(p => p !== v);
+  }
+}
 
-document.querySelectorAll('.tag').forEach(t => {
-  t.onclick = () => {
-    t.classList.toggle('on');
-    const v = t.dataset.v;
-    problemes = t.classList.contains('on')
-      ? [...problemes, v]
-      : problemes.filter(p => p !== v);
-  };
-});
+function updateProgress() {
+  const nom = document.getElementById('nom').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const tel = document.getElementById('tel').value.trim();
+  const ville = document.getElementById('ville').value.trim();
+  const secteur = document.getElementById('secteur').value;
+
+  let score = 0;
+  if (nom) score += 25;
+  if (email || tel) score += 25;
+  if (ville) score += 20;
+  if (secteur) score += 15;
+  if (note > 0) score += 15;
+
+  document.getElementById('progress').style.width = score + '%';
+}
+
+function resetForm() {
+  document.getElementById('nom').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('tel').value = '';
+  document.getElementById('ville').value = '';
+  document.getElementById('secteur').value = '';
+  document.getElementById('notes').value = '';
+  note = 0;
+  whatsappActif = false;
+  problemes = [];
+  document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('star-label').textContent = 'Non renseignée';
+  document.getElementById('wa-tag').classList.remove('on');
+  document.querySelectorAll('.tag[data-v]').forEach(t => t.classList.remove('on'));
+  document.getElementById('progress').style.width = '0%';
+}
 
 async function envoyer() {
   const payload = {
-  nom: document.getElementById('nom').value.trim(),
-  email: document.getElementById('email').value.trim(),
-  tel: document.getElementById('tel').value.trim(),
-  ville: document.getElementById('ville').value.trim(),
-  secteur: document.getElementById('secteur').value,
-  note,
-  problemes,
-  notes: document.getElementById('notes').value.trim(),
-  whatsapp: whatsappActif,
-};
+    nom: document.getElementById('nom').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    tel: document.getElementById('tel').value.trim(),
+    ville: document.getElementById('ville').value.trim(),
+    secteur: document.getElementById('secteur').value,
+    note,
+    problemes,
+    notes: document.getElementById('notes').value.trim(),
+    whatsapp: whatsappActif,
+  };
 
-  if (!payload.nom || (!payload.email && !payload.tel)) {
-    document.getElementById('status').textContent = 'Nom + email ou téléphone requis.';
-    document.getElementById('status').className = 'status err';
+  if (!payload.nom || payload.nom.length < 2) {
+    showStatus('err', '⚠️ Nom du commerce requis');
+    return;
+  }
+  if (!payload.email && !payload.tel) {
+    showStatus('err', '⚠️ Email ou téléphone requis');
+    return;
+  }
+  if (payload.email && !payload.email.includes('@')) {
+    showStatus('err', '⚠️ Email invalide');
     return;
   }
 
-  const btn = document.querySelector('.btn');
-  btn.textContent = 'Envoi en cours...';
+  const btn = document.getElementById('btn');
   btn.disabled = true;
-  document.getElementById('status').textContent = '';
+  btn.className = 'btn loading';
+  showStatus('', '');
 
- try {
-    const res = await fetch('https://prosp-production-b0a0.up.railway.app/prospect', {
+  try {
+    const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
-  'Content-Type': 'application/json',
-  'x-api-key': 'ikreet-secret-2026-xK9mP3qR'
-},
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
+      },
       body: JSON.stringify(payload)
     });
 
     const data = await res.json();
 
     if (res.ok && data.success) {
-     document.getElementById('status').textContent = '✅ Email envoyé !' + (payload.whatsapp ? ' WhatsApp programmé dans 6h.' : ' Appel vocal programmé dans 6h.');
-      document.getElementById('status').className = 'status ok';
-      btn.textContent = '✅ Envoyé !';
-      // Reset du formulaire après 3 secondes
+      btn.className = 'btn success';
+      btn.querySelector('.btn-text').style.display = 'block';
+      btn.querySelector('.btn-text').textContent = '✅ Envoyé !';
+      
+      const canal = payload.whatsapp ? 'WhatsApp dans 6h' : 'Appel vocal dans 6h';
+      showStatus('ok', `📧 Email envoyé · 📞 ${canal}`);
+
+      // Vibration sur mobile
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+      // Reset après 3 secondes
       setTimeout(() => {
-        btn.textContent = 'Lancer la prospection';
+        btn.className = 'btn';
+        btn.querySelector('.btn-text').textContent = '🚀 LANCER LA PROSPECTION';
         btn.disabled = false;
-        document.getElementById('status').textContent = '';
-      }, 4000);
+        showStatus('', '');
+        resetForm();
+      }, 3000);
+
     } else {
       throw new Error(data.error || 'Erreur serveur');
     }
   } catch (err) {
-    document.getElementById('status').textContent = '❌ ' + (err.message || 'Serveur non joignable');
-    document.getElementById('status').className = 'status err';
-    btn.textContent = 'Lancer la prospection';
+    btn.className = 'btn';
+    btn.querySelector('.btn-text').style.display = 'block';
     btn.disabled = false;
+    showStatus('err', '❌ ' + (err.message || 'Erreur de connexion'));
   }
 }
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
 </script>
+</body>
+</html>
