@@ -27,26 +27,39 @@ async function envoyerSequence(prospects) {
 }
 
 async function ajouterJobEnvoi(prospect, delaiMs) {
-  const { ajouterJob } = require('./queue');
-  const delaiMinutes = Math.floor(delaiMs / 60000);
-  
-  // On stocke le prospect dans la queue avec type 'email'
   const fs = require('fs');
   const QUEUE_FILE = './queue.json';
-  const queue = fs.existsSync(QUEUE_FILE) 
-    ? JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8')) 
+  const queue = fs.existsSync(QUEUE_FILE)
+    ? JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'))
     : [];
-  
-  const executeAt = new Date(Date.now() + delaiMs).toISOString();
+
+  let executeAt = new Date(Date.now() + delaiMs);
+
+  // Si l'heure calculée est hors plage → décaler au prochain jour ouvré à 08h30
+  const heure = executeAt.getHours() + executeAt.getMinutes() / 60;
+  const jour = executeAt.getDay();
+
+  if (jour === 0 || heure < 8.5 || heure > 17.5) {
+    // Trouver le prochain jour ouvré
+    executeAt.setHours(8, 30, 0, 0);
+    executeAt.setDate(executeAt.getDate() + 1);
+
+    // Si c'est dimanche, passer au lundi
+    while (executeAt.getDay() === 0) {
+      executeAt.setDate(executeAt.getDate() + 1);
+    }
+  }
+
   queue.push({
     id: Date.now().toString() + Math.random().toString(36).slice(2),
     type: 'email_prospect',
     prospect,
-    executeAt,
+    executeAt: executeAt.toISOString(),
     statut: 'en_attente'
   });
-  
+
   fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
+  console.log(`📅 Email programmé pour ${executeAt.toLocaleString('fr-FR')}`);
 }
 
 async function envoyerProspect(prospect) {
