@@ -12,6 +12,9 @@ const { sauvegarderProspect } = require('./services/sheets');
 const { ajouterJob } = require('./services/queue');
 const { demarrerCron } = require('./services/cron');
 const { envoyerRVM, callAudioMap } = require('./services/rvm');
+const { scannerVille } = require('./services/scraper');
+const { envoyerSequence } = require('./services/sender');
+const { demarrerScanCron } = require('./services/scan-cron');
 
 const app = express();
 
@@ -125,7 +128,37 @@ app.post('/twiml/amd-callback', async (req, res) => {
     console.log(`❓ AMD inconnu : ${AnsweredBy} — raccrocher`);
     twiml.hangup();
   }
+  // ── Route scan automatique ──
+app.post('/scan', async (req, res) => {
+  const authHeader = req.headers['x-api-key'];
+  if (authHeader !== process.env.APP_SECRET) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
 
+  const { ville, secteur, rayon } = req.body;
+
+  if (!ville || !secteur) {
+    return res.status(400).json({ error: 'Ville et secteur requis' });
+  }
+
+  // Répondre immédiatement — le scan tourne en arrière-plan
+  res.json({ success: true, message: `Scan lancé pour ${secteur} à ${ville}` });
+
+  // Lancer le scan en arrière-plan
+  try {
+    const prospects = await scannerVille(ville, secteur, rayon || 5000);
+    
+    // Ajouter le secteur à chaque prospect
+    prospects.forEach(p => p.secteur = secteur);
+    
+    // Lancer l'envoi espacé
+    await envoyerSequence(prospects);
+    
+    console.log(`✅ Scan terminé — ${prospects.length} prospects en cours d'envoi`);
+  } catch (err) {
+    console.error('❌ Erreur scan:', err.message);
+  }
+});
   // Nettoyage mémoire
   delete callAudioMap[CallSid];
 
@@ -135,6 +168,7 @@ app.post('/twiml/amd-callback', async (req, res) => {
 
 // ── Démarrer le cron ──
 demarrerCron();
+demarrerScanCron();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

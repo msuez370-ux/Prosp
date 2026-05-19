@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<title>IKREET — Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#2a2a3a;--accent:#c8f135;--orange:#f97316;--text:#f0f0f0;--muted:#666;--radius:14px}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100dvh;padding:20px 16px 40px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--text);margin-bottom:4px}
+.logo span{color:var(--accent)}
+.sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+input,select{width:100%;background:#1a1a26;border:1.5px solid var(--border);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;padding:14px 16px;border-radius:10px;outline:none;-webkit-appearance:none;margin-bottom:14px}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:#12121a}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{width:100%;background:var(--accent);color:#0a0a0f;border:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;padding:18px;border-radius:12px;cursor:pointer;margin-top:8px}
+.btn:disabled{opacity:.5}
+.btn.secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border);font-size:16px;margin-top:8px}
+.status{margin-top:16px;padding:14px;border-radius:10px;font-size:13px;line-height:1.6;display:none}
+.status.ok{background:#0a1f0a;border:1px solid #22c55e;color:#22c55e;display:block}
+.status.err{background:#1f0a0a;border:1px solid #ff5555;color:#ff5555;display:block}
+.status.info{background:#0a0f1f;border:1px solid var(--accent);color:var(--accent);display:block}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.stat{background:#1a1a26;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.stat-n{font-size:24px;font-weight:700;color:var(--accent)}
+.stat-l{font-size:10px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="logo">IK<span>REET</span></div>
+<p class="sub">Scanner automatique</p>
+
+<div class="card">
+  <label>Ville cible</label>
+  <input id="ville" type="text" placeholder="Ex: La Ciotat" autocomplete="off">
+
+  <label>Secteur</label>
+  <select id="secteur">
+    <option value="">-- Choisir --</option>
+    <option>Restaurant / Café</option>
+    <option>Épicerie / Alimentation</option>
+    <option>Coiffure / Beauté</option>
+    <option>Fitness / Sport</option>
+    <option>Garage / Auto</option>
+    <option>Boulangerie / Pâtisserie</option>
+    <option>Pharmacie / Santé</option>
+    <option>Vêtements / Mode</option>
+    <option>Hôtel / Hébergement</option>
+    <option>Immobilier</option>
+    <option>Médecin / Dentiste / Kiné</option>
+    <option>École / Formation</option>
+    <option>Autre</option>
+  </select>
+
+  <label>Rayon de recherche</label>
+  <select id="rayon">
+    <option value="2000">2 km</option>
+    <option value="5000" selected>5 km</option>
+    <option value="10000">10 km</option>
+    <option value="20000">20 km</option>
+  </select>
+
+  <button class="btn" id="btn" onclick="lancer()">🔍 LANCER LE SCAN</button>
+</div>
+
+<div class="stat-row">
+  <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Scannés</div></div>
+  <div class="stat"><div class="stat-n" id="s-email">0</div><div class="stat-l">Emails trouvés</div></div>
+  <div class="stat"><div class="stat-n" id="s-envoi">0</div><div class="stat-l">Envoyés</div></div>
+</div>
+
+<div class="status" id="status"></div>
+
+<button class="btn secondary" onclick="window.location='/'">← Retour au formulaire</button>
+
+<script>
+const API_URL = 'https://prosp-production-b0a0.up.railway.app/scan';
+const API_KEY = 'ikreet-secret-2026-xK9mP3qR';
+
+async function lancer() {
+  const ville = document.getElementById('ville').value.trim();
+  const secteur = document.getElementById('secteur').value;
+  const rayon = document.getElementById('rayon').value;
+
+  if (!ville || !secteur) {
+    showStatus('err', '⚠️ Ville et secteur requis');
+    return;
+  }
+
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ SCAN EN COURS...';
+  showStatus('info', `🔍 Scan lancé pour "${secteur}" à ${ville} (rayon ${rayon/1000}km)\n\nLe système va :\n1. Scanner Google Maps\n2. Scanner Pages Jaunes\n3. Extraire les emails\n4. Envoyer les emails espacés de 30 min\n\nTu peux fermer cette page — tout tourne en arrière-plan.`);
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
+      },
+      body: JSON.stringify({ ville, secteur, rayon: parseInt(rayon) })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showStatus('ok', `✅ Scan lancé !\n\nLes emails vont partir automatiquement toutes les 30 minutes.\nVérifie Google Sheets pour suivre les envois en temps réel.`);
+      btn.textContent = '✅ SCAN LANCÉ';
+    } else {
+      throw new Error(data.error || 'Erreur serveur');
+    }
+  } catch (err) {
+    showStatus('err', '❌ ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '🔍 LANCER LE SCAN';
+  }
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+</script>
+</body>
+</html>
