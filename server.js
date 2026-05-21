@@ -128,7 +128,15 @@ app.post('/twiml/amd-callback', async (req, res) => {
     console.log(`❓ AMD inconnu : ${AnsweredBy} — raccrocher`);
     twiml.hangup();
   }
-  // ── Route scan automatique ──
+
+  // Nettoyage mémoire
+  delete callAudioMap[CallSid];
+
+  res.type('text/xml');
+  res.send(twiml.toString());
+});
+
+// ── Route scan automatique ──
 app.post('/scan', async (req, res) => {
   const authHeader = req.headers['x-api-key'];
   if (authHeader !== process.env.APP_SECRET) {
@@ -147,23 +155,17 @@ app.post('/scan', async (req, res) => {
   // Lancer le scan en arrière-plan
   try {
     const prospects = await scannerVille(ville, secteur, rayon || 5000);
-    
+
     // Ajouter le secteur à chaque prospect
     prospects.forEach(p => p.secteur = secteur);
-    
+
     // Lancer l'envoi espacé
     await envoyerSequence(prospects);
-    
+
     console.log(`✅ Scan terminé — ${prospects.length} prospects en cours d'envoi`);
   } catch (err) {
     console.error('❌ Erreur scan:', err.message);
   }
-});
-  // Nettoyage mémoire
-  delete callAudioMap[CallSid];
-
-  res.type('text/xml');
-  res.send(twiml.toString());
 });
 
 // ── Démarrer le cron ──
