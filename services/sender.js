@@ -87,10 +87,10 @@ async function envoyerProspect(prospect) {
      // await envoyerEmail(prospectFormate, messages.email_objet, messages.email_corps);
     //}
 
-    // Envoyer SMS si disponible (et email absent)
-    if (prospect.tel && !prospect.email) {
-      await envoyerSMS(prospectFormate, messages.sms);
-    }
+    // SMS désactivé (crédits Brevo)
+// if (prospect.tel && !prospect.email) {
+//   await envoyerSMS(prospectFormate, messages.sms);
+// }
 
     // Programmer RVM si numéro dispo
     if (prospect.tel) {
