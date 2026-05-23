@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 
 // ── Google Maps Places API ──
 async function chercherSurGoogleMaps(ville, secteur, rayon = 5000) {
@@ -49,9 +50,11 @@ async function getPlaceDetails(placeId) {
 // ── Scraping Pages Jaunes ──
 async function chercherSurPagesJaunes(ville, secteur) {
   const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  args: chromium.args,
+  defaultViewport: chromium.defaultViewport,
+  executablePath: await chromium.executablePath(),
+  headless: chromium.headless,
+});
 
   const page = await browser.newPage();
   await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15');

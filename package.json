@@ -24,6 +24,7 @@
     "@aws-sdk/client-polly": "^3.1045.0",
     "@aws-sdk/client-s3": "^3.1046.0",
     "@getbrevo/brevo": "^5.0.4",
+    "@sparticuz/chromium": "^148.0.0",
     "axios": "^1.16.1",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
@@ -32,7 +33,7 @@
     "express-rate-limit": "^8.5.1",
     "googleapis": "^171.4.0",
     "node-cron": "^4.2.1",
-    "puppeteer": "^25.0.4",
+    "puppeteer-core": "^25.0.4",
     "twilio": "^6.0.2"
   }
 }
