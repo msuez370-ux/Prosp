@@ -71,7 +71,7 @@ async function envoyerProspect(prospect) {
       nom: prospect.nom,
       email: prospect.email || '',
       tel: prospect.tel || '',
-      ville: prospect.ville || prospect.adresse,
+      ville: prospect.ville || prospect.adresse || '',
       secteur: prospect.secteur,
       note: prospect.note || 0,
       problemes: construireProblemes(prospect),
@@ -83,9 +83,9 @@ async function envoyerProspect(prospect) {
     const messages = await genererMessages(prospectFormate);
 
     // Envoyer email si disponible
-    if (prospect.email) {
-      await envoyerEmail(prospectFormate, messages.email_objet, messages.email_corps);
-    }
+    // if (prospect.email) {
+     // await envoyerEmail(prospectFormate, messages.email_objet, messages.email_corps);
+    //}
 
     // Envoyer SMS si disponible (et email absent)
     if (prospect.tel && !prospect.email) {

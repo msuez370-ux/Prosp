@@ -153,6 +153,8 @@ async function scannerVille(ville, secteur, rayon = 5000) {
 
   // 5. Trier par score
   filtres.sort((a, b) => b.score - a.score);
+  // Après filtres.sort(...)
+filtres.forEach(p => p.ville = ville);
 
   console.log(`✅ ${filtres.length} prospects qualifiés prêts`);
   return filtres;
