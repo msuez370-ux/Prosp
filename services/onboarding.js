@@ -15,64 +15,22 @@ function getAuth() {
     scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
   });
 }
-
-async function creerGoogleSheet(nomClient) {
-  const auth = getAuth();
-  const sheets = google.sheets({ version: 'v4', auth });
-  const drive = google.drive({ version: 'v3', auth });
-
-  // Créer un nouveau Google Sheet
-  const spreadsheet = await sheets.spreadsheets.create({
-    requestBody: {
-      properties: { title: `IKREET — Prospects ${nomClient}` },
-      sheets: [
-        {
-          properties: { title: 'Prospects', sheetId: 0 },
-          data: [{
-            startRow: 0, startColumn: 0,
-            rowData: [{
-              values: [
-                'Date', 'Nom', 'Secteur', 'Ville', 'Email', 'Téléphone',
-                'Note', 'Problèmes', 'Email Objet', 'Email Corps', 'SMS', 'Statut'
-              ].map(v => ({ userEnteredValue: { stringValue: v } }))
-            }]
-          }]
-        },
-        { properties: { title: 'Queue', sheetId: 1 } }
-      ]
-    }
-  });
-
-  const sheetId = spreadsheet.data.spreadsheetId;
-
-  // Partager avec le service account
-  await drive.permissions.create({
-    fileId: sheetId,
-    requestBody: { role: 'writer', type: 'anyone' }
-  });
-
-  return sheetId;
-}
-
 async function genererClient(infos) {
-  const {
-    nom, prenom, email, tel, entreprise, secteurActivite
-  } = infos;
+  const { nom, prenom, email, tel, entreprise, secteurActivite } = infos;
 
   // 1. Générer APP_SECRET unique
   const secret = `ikreet-${entreprise.toLowerCase().replace(/\s/g, '-')}-${crypto.randomBytes(4).toString('hex')}`;
 
-  // 2. Créer Google Sheet dédié
-  console.log('📊 Création Google Sheet...');
-  const sheetId = await creerGoogleSheet(entreprise);
+  // 2. Utiliser le même Google Sheet principal
+  const sheetId = process.env.GOOGLE_SHEET_ID;
 
   // 3. Générer URL client
   const clientSlug = entreprise.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '');
   const clientUrl = `${process.env.BASE_URL}?client=${clientSlug}&key=${secret}`;
 
-  // 4. Construire la config client
   const config = {
     nom: `${prenom} ${nom}`,
+    prenom,
     entreprise,
     email,
     tel,
@@ -83,11 +41,8 @@ async function genererClient(infos) {
     dateCreation: new Date().toLocaleString('fr-FR'),
   };
 
-  // 5. Envoyer email de bienvenue
   console.log('📧 Envoi email de bienvenue...');
   await envoyerEmailBienvenue(config);
-
-  // 6. Sauvegarder dans Google Sheet principal (onglet Clients)
   await sauvegarderClient(config);
 
   return config;
