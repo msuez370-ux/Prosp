@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKREET — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#2a2a3a;--accent:#c8f135;--orange:#f97316;--text:#f0f0f0;--muted:#666;--radius:14px}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100dvh;padding:20px 16px 40px;max-width:520px;margin:0 auto}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:4px}
+.logo span{color:var(--accent)}
+.sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.card-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:16px}
+label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:6px;margin-top:12px}
+input,select{width:100%;background:#1a1a26;border:1.5px solid var(--border);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;padding:13px 16px;border-radius:10px;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--accent)}
+.btn{width:100%;background:var(--accent);color:#0a0a0f;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;padding:16px;border-radius:12px;cursor:pointer;margin-top:20px}
+.btn:disabled{opacity:.5}
+.result{margin-top:16px;background:#0a1f0a;border:1px solid var(--accent);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;display:none}
+.result.show{display:block}
+.result a{color:var(--accent);word-break:break-all}
+.err{background:#1f0a0a;border-color:#ff5555;color:#ff5555}
+.copy-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;margin-left:8px}
+.nav{display:flex;gap:8px;margin-bottom:20px}
+.nav a{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;font-size:12px;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="logo">IK<span>REET</span> <span style="font-size:16px;color:var(--muted)">ADMIN</span></div>
+<p class="sub">Gestion des clients</p>
+
+<div class="nav">
+  <a href="/">📱 Formulaire</a>
+  <a href="/scan.html">🔍 Scanner</a>
+</div>
+
+<div class="card">
+  <div class="card-title">✨ Générer un nouvel espace client</div>
+
+  <label>Prénom</label>
+  <input id="prenom" type="text" placeholder="Salah" value="Salah">
+
+  <label>Nom</label>
+  <input id="nom" type="text" placeholder="TLIBA" value="TLIBA">
+
+  <label>Email</label>
+  <input id="email" type="email" placeholder="speedcourse13600@hotmail.com" value="speedcourse13600@hotmail.com">
+
+  <label>Téléphone</label>
+  <input id="tel" type="tel" placeholder="06 67 22 06 21" value="06 67 22 06 21">
+
+  <label>Nom de l'entreprise</label>
+  <input id="entreprise" type="text" placeholder="Speedcourse" value="Speedcourse">
+
+  <label>Secteur d'activité</label>
+  <select id="secteur">
+    <option value="Collecte de courrier professionnel">Collecte de courrier professionnel</option>
+    <option value="Livraison / Transport">Livraison / Transport</option>
+    <option value="Services aux entreprises">Services aux entreprises</option>
+  </select>
+
+  <label>Plan</label>
+  <select id="plan">
+    <option value="50">Starter — 50€/mois</option>
+    <option value="99">Pro — 99€/mois</option>
+    <option value="199">Illimité — 199€/mois</option>
+  </select>
+
+  <button class="btn" id="btn" onclick="generer()">⚡ GÉNÉRER L'ESPACE CLIENT</button>
+</div>
+
+<div class="result" id="result"></div>
+
+<script>
+const API_KEY = 'ikreet-secret-2026-xK9mP3qR';
+
+async function generer() {
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ GÉNÉRATION EN COURS...';
+
+  const payload = {
+    prenom: document.getElementById('prenom').value.trim(),
+    nom: document.getElementById('nom').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    tel: document.getElementById('tel').value.trim(),
+    entreprise: document.getElementById('entreprise').value.trim(),
+    secteurActivite: document.getElementById('secteur').value,
+    plan: document.getElementById('plan').value,
+  };
+
+  try {
+    const res = await fetch('/admin/generer-client', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      const c = data.config;
+      const el = document.getElementById('result');
+      el.className = 'result show';
+      el.innerHTML = `
+        <strong style="color:var(--accent)">✅ Espace généré pour ${c.entreprise} !</strong><br><br>
+        <strong>Client :</strong> ${c.nom}<br>
+        <strong>Email :</strong> ${c.email}<br>
+        <strong>Plan :</strong> ${payload.plan}€/mois<br><br>
+        <strong>🔗 Lien client :</strong><br>
+        <a href="${c.clientUrl}" target="_blank">${c.clientUrl}</a>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${c.clientUrl}')">Copier</button><br><br>
+        <strong>📊 Google Sheet :</strong><br>
+        <a href="https://docs.google.com/spreadsheets/d/${c.sheetId}" target="_blank">Ouvrir le Sheet</a><br><br>
+        <strong>🔑 Secret :</strong> ${c.secret}<br><br>
+        <em style="color:var(--muted)">Email de bienvenue envoyé à ${c.email} ✅</em>
+      `;
+      btn.textContent = '✅ GÉNÉRÉ !';
+    } else {
+      throw new Error(data.error || 'Erreur serveur');
+    }
+  } catch (err) {
+    const el = document.getElementById('result');
+    el.className = 'result show err';
+    el.textContent = '❌ ' + err.message;
+    btn.disabled = false;
+    btn.textContent = '⚡ GÉNÉRER L\'ESPACE CLIENT';
+  }
+}
+</script>
+</body>
+</html>

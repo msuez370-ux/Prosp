@@ -167,6 +167,24 @@ app.post('/scan', async (req, res) => {
     console.error('❌ Erreur scan:', err.message);
   }
 });
+const { genererClient } = require('./services/onboarding');
+
+// ── Route onboarding client ──
+app.post('/admin/generer-client', async (req, res) => {
+  const authHeader = req.headers['x-api-key'];
+  if (authHeader !== process.env.APP_SECRET) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+
+  try {
+    const config = await genererClient(req.body);
+    console.log(`✅ Client généré : ${config.entreprise}`);
+    res.json({ success: true, config });
+  } catch (err) {
+    console.error('❌ Erreur onboarding:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // ── Démarrer le cron ──
 demarrerCron();
