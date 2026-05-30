@@ -139,34 +139,38 @@ app.post('/twiml/amd-callback', async (req, res) => {
 // ── Route scan automatique ──
 app.post('/scan', async (req, res) => {
   const authHeader = req.headers['x-api-key'];
-  
-  // Accepte soit le secret admin, soit une clé client valide
   const isAdmin = authHeader === process.env.APP_SECRET;
   const isClient = authHeader && authHeader.startsWith('ikreet-');
-  
+
   if (!isAdmin && !isClient) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
+
   const { ville, secteur, rayon } = req.body;
 
   if (!ville || !secteur) {
     return res.status(400).json({ error: 'Ville et secteur requis' });
   }
 
-  // Répondre immédiatement — le scan tourne en arrière-plan
   res.json({ success: true, message: `Scan lancé pour ${secteur} à ${ville}` });
 
-  // Lancer le scan en arrière-plan
   try {
     const prospects = await scannerVille(ville, secteur, rayon || 5000);
 
-    // Ajouter le secteur à chaque prospect
-    prospects.forEach(p => p.secteur = secteur);
+    prospects.forEach(p => {
+      p.secteur = secteur;
+      // Tag client selon la clé utilisée
+      if (isAdmin) {
+        p.client = 'IKREET';
+      } else {
+        // Extraire le nom du client depuis la clé : ikreet-speedcourse-xxxx
+        const parts = authHeader.split('-');
+        p.client = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : 'Client';
+      }
+    });
 
-    // Lancer l'envoi espacé
     await envoyerSequence(prospects);
-
-    console.log(`✅ Scan terminé — ${prospects.length} prospects en cours d'envoi`);
+    console.log(`✅ Scan terminé — ${prospects.length} prospects — Client: ${prospects[0]?.client}`);
   } catch (err) {
     console.error('❌ Erreur scan:', err.message);
   }
