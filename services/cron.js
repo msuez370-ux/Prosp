@@ -29,10 +29,10 @@ function demarrerCron() {
             await envoyerWhatsApp(job.prospect, job.messages.whatsapp);
           }
 
-          if (job.type === 'rvm') {
-            const audioUrl = await genererAudio(job.messages.vocal, `rvm_${job.id}`);
-            await envoyerRVM(job.prospect, audioUrl);
-          }
+          //if (job.type === 'rvm') {
+          //  const audioUrl = await genererAudio(job.messages.vocal, `rvm_${job.id}`);
+          //  await envoyerRVM(job.prospect, audioUrl);
+          //}
 
           await marquerJobFait(job.index);
           console.log(`✅ Job ${job.type} exécuté pour ${job.prospect.nom}`);
