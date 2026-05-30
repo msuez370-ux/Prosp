@@ -139,10 +139,14 @@ app.post('/twiml/amd-callback', async (req, res) => {
 // ── Route scan automatique ──
 app.post('/scan', async (req, res) => {
   const authHeader = req.headers['x-api-key'];
-  if (authHeader !== process.env.APP_SECRET) {
+  
+  // Accepte soit le secret admin, soit une clé client valide
+  const isAdmin = authHeader === process.env.APP_SECRET;
+  const isClient = authHeader && authHeader.startsWith('ikreet-');
+  
+  if (!isAdmin && !isClient) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
-
   const { ville, secteur, rayon } = req.body;
 
   if (!ville || !secteur) {
