@@ -26,7 +26,7 @@ async function genererClient(infos) {
 
   // 3. Générer URL client
   const clientSlug = entreprise.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '');
-  const clientUrl = `${process.env.BASE_URL}?client=${clientSlug}&key=${secret}`;
+ const clientUrl = `${process.env.BASE_URL}/client.html?client=${clientSlug}&key=${secret}`;
 
   const config = {
     nom: `${prenom} ${nom}`,

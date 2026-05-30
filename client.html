@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<title>Prospection automatique</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#2a2a3a;--accent:#c8f135;--text:#f0f0f0;--muted:#666;--radius:14px}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100dvh;padding:24px 16px 40px;max-width:480px;margin:0 auto}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:4px}
+.logo span{color:var(--accent)}
+.sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;margin-top:14px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#1a1a26;border:1.5px solid var(--border);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;padding:14px 16px;border-radius:10px;outline:none;-webkit-appearance:none;margin-bottom:4px}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:#12121a}
+.btn{width:100%;background:var(--accent);color:#0a0a0f;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;padding:17px;border-radius:12px;cursor:pointer;margin-top:20px;transition:opacity .15s}
+.btn:disabled{opacity:.5}
+.status{margin-top:14px;padding:14px;border-radius:10px;font-size:13px;line-height:1.7;display:none;white-space:pre-line}
+.status.ok{background:#0a1f0a;border:1px solid var(--accent);color:var(--accent);display:block}
+.status.err{background:#1f0a0a;border:1px solid #ff5555;color:#ff5555;display:block}
+.status.info{background:#0a0f1a;border:1px solid var(--accent);color:var(--text);display:block}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.stat{background:#1a1a26;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-n{font-size:28px;font-weight:700;color:var(--accent);font-family:'Bebas Neue',sans-serif}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="logo">IK<span>REET</span></div>
+<p class="sub" id="client-name">Prospection automatique</p>
+<div class="card">
+  <label>Ville à prospecter</label>
+  <input id="ville" type="text" placeholder="Ex: La Ciotat, Aubagne..." autocomplete="off">
+  <label>Type d'entreprise ciblée</label>
+  <select id="secteur">
+    <option value="">-- Choisir --</option>
+    <option>Restaurant / Café</option>
+    <option>Épicerie / Alimentation</option>
+    <option>Coiffure / Beauté</option>
+    <option>Garage / Auto</option>
+    <option>Boulangerie / Pâtisserie</option>
+    <option>Pharmacie / Santé</option>
+    <option>Vêtements / Mode</option>
+    <option>Hôtel / Hébergement</option>
+    <option>Immobilier</option>
+    <option>Médecin / Dentiste / Kiné</option>
+    <option>Avocat / Notaire / Expert-comptable</option>
+    <option>Artisan / BTP</option>
+    <option>Fitness / Sport</option>
+    <option>École / Formation</option>
+    <option>Entreprise / Bureau</option>
+    <option>Autre</option>
+  </select>
+  <label>Rayon de recherche</label>
+  <select id="rayon">
+    <option value="2000">2 km</option>
+    <option value="5000" selected>5 km</option>
+    <option value="10000">10 km</option>
+    <option value="20000">20 km</option>
+  </select>
+  <button class="btn" id="btn" onclick="lancer()">🚀 LANCER LA PROSPECTION</button>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="s-scans">0</div><div class="stat-l">Scans lancés</div></div>
+  <div class="stat"><div class="stat-n" id="s-prospects">0</div><div class="stat-l">Prospects en file</div></div>
+</div>
+<div class="status" id="status"></div>
+<script>
+const params = new URLSearchParams(window.location.search);
+const CLIENT_KEY = params.get('key') || '';
+const CLIENT_NAME = params.get('client') || '';
+if (CLIENT_NAME) {
+  document.getElementById('client-name').textContent = CLIENT_NAME.replace(/-/g, ' ').toUpperCase();
+}
+let scansTotal = 0;
+let prospectsTotal = 0;
+async function lancer() {
+  const ville = document.getElementById('ville').value.trim();
+  const secteur = document.getElementById('secteur').value;
+  const rayon = document.getElementById('rayon').value;
+  if (!ville || !secteur) { showStatus('err', 'Ville et secteur requis'); return; }
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = 'SCAN EN COURS...';
+  showStatus('info', 'Scan lance pour "' + secteur + '" a ' + ville + '\n\nLe systeme trouve les entreprises et programme les emails automatiquement entre 08h30 et 17h30.');
+  try {
+    const res = await fetch('/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': CLIENT_KEY },
+      body: JSON.stringify({ ville, secteur, rayon: parseInt(rayon) })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      scansTotal++;
+      prospectsTotal += 20;
+      document.getElementById('s-scans').textContent = scansTotal;
+      document.getElementById('s-prospects').textContent = prospectsTotal + '+';
+      showStatus('ok', 'Scan lance !\n\n~20 entreprises de ' + ville + ' vont recevoir un email personnalise automatiquement.\n\nTu peux lancer un autre scan maintenant.');
+      document.getElementById('ville').value = '';
+      document.getElementById('secteur').value = '';
+    } else { throw new Error(data.error || 'Erreur serveur'); }
+  } catch(err) { showStatus('err', err.message); }
+  btn.disabled = false;
+  btn.textContent = 'LANCER LA PROSPECTION';
+}
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+</script>
+</body>
+</html>
