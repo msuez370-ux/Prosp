@@ -15,6 +15,7 @@ const { envoyerRVM, callAudioMap } = require('./services/rvm');
 const { scannerVille } = require('./services/scraper');
 const { envoyerSequence } = require('./services/sender');
 const { demarrerScanCron } = require('./services/scan-cron');
+const { genererClient } = require('./services/onboarding');
 
 const app = express();
 
@@ -34,43 +35,44 @@ app.use('/prospect', limiter);
 app.use(express.static('.'));
 app.use('/audio', express.static(path.join(__dirname, 'audio')));
 
-// ── Route principale ──
-app.post('/prospect', async (req, res) => {
+// ── Utilitaire : nom client depuis clé API ──
+function getNomClient(authHeader, isAdmin) {
+  if (isAdmin) return 'IKREET';
+  // Format clé : ikreet-speedcourse-xxxx → "Speedcourse"
+  const parts = authHeader.split('-');
+  if (parts.length >= 2) {
+    return parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+  }
+  return 'Client';
+}
 
-  // Authentification
+// ── Route formulaire manuel ──
+app.post('/prospect', async (req, res) => {
   const authHeader = req.headers['x-api-key'];
   if (authHeader !== process.env.APP_SECRET) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
 
-  // Validation
   const { nom, email, tel } = req.body;
-  if (!nom || nom.length < 2) {
-    return res.status(400).json({ error: 'Nom invalide' });
-  }
-  if (!email && !tel) {
-    return res.status(400).json({ error: 'Email ou téléphone requis' });
-  }
-  if (email && !email.includes('@')) {
-    return res.status(400).json({ error: 'Email invalide' });
-  }
+  if (!nom || nom.length < 2) return res.status(400).json({ error: 'Nom invalide' });
+  if (!email && !tel) return res.status(400).json({ error: 'Email ou téléphone requis' });
+  if (email && !email.includes('@')) return res.status(400).json({ error: 'Email invalide' });
 
   const prospect = req.body;
+  prospect.client = 'IKREET';
+
   console.log(`\n📋 Nouveau prospect : ${prospect.nom} — ${prospect.ville}`);
 
   try {
-    // 1. Générer tous les messages
     console.log('🤖 Génération des messages...');
     const messages = await genererMessages(prospect);
     console.log('✅ Messages générés');
 
-    // 2. Email immédiatement
     await envoyerEmail(prospect, messages.email_objet, messages.email_corps);
 
-    // 3. SMS désactivé (plan Brevo gratuit)
+    // SMS désactivé
     // await envoyerSMS(prospect, messages.sms);
 
-    // 4. WhatsApp ou RVM selon disponibilité
     if (prospect.tel) {
       if (prospect.whatsapp) {
         ajouterJob('whatsapp', prospect, messages, 360);
@@ -82,9 +84,7 @@ app.post('/prospect', async (req, res) => {
       }
     }
 
-    // 5. Sauvegarder dans Google Sheets
     await sauvegarderProspect(prospect, messages);
-
     res.json({ success: true, messages });
 
   } catch (err) {
@@ -93,15 +93,15 @@ app.post('/prospect', async (req, res) => {
   }
 });
 
-// ── Route TwiML — Twilio appelle cette URL au début de l'appel ──
+// ── Route TwiML ──
 app.get('/twiml/rvm', (req, res) => {
   const twiml = new VoiceResponse();
-  twiml.pause({ length: 45 }); // Silence pendant que AMD analyse
+  twiml.pause({ length: 45 });
   res.type('text/xml');
   res.send(twiml.toString());
 });
 
-// ── Callback AMD — Twilio nous dit si c'est humain ou messagerie ──
+// ── Callback AMD ──
 app.post('/twiml/amd-callback', async (req, res) => {
   const { AnsweredBy, CallSid } = req.body;
   console.log(`📞 AMD — ${CallSid} — ${AnsweredBy}`);
@@ -115,23 +115,14 @@ app.post('/twiml/amd-callback', async (req, res) => {
     AnsweredBy === 'machine_end_other'
   ) {
     console.log(`📱 Messagerie détectée — dépôt du message vocal`);
-    if (audioUrl) {
-      twiml.play(audioUrl);
-    } else {
-      console.log('⚠️ Pas d\'URL audio trouvée pour ce CallSid');
-    }
-    twiml.hangup();
-  } else if (AnsweredBy === 'human') {
-    console.log(`👤 Humain a décroché — raccrocher`);
+    if (audioUrl) twiml.play(audioUrl);
     twiml.hangup();
   } else {
-    console.log(`❓ AMD inconnu : ${AnsweredBy} — raccrocher`);
+    console.log(`👤 ${AnsweredBy} — raccrocher`);
     twiml.hangup();
   }
 
-  // Nettoyage mémoire
   delete callAudioMap[CallSid];
-
   res.type('text/xml');
   res.send(twiml.toString());
 });
@@ -147,10 +138,12 @@ app.post('/scan', async (req, res) => {
   }
 
   const { ville, secteur, rayon } = req.body;
-
   if (!ville || !secteur) {
     return res.status(400).json({ error: 'Ville et secteur requis' });
   }
+
+  const nomClient = getNomClient(authHeader, isAdmin);
+  console.log(`🔍 Scan lancé — Client: ${nomClient} — ${secteur} à ${ville}`);
 
   res.json({ success: true, message: `Scan lancé pour ${secteur} à ${ville}` });
 
@@ -159,23 +152,16 @@ app.post('/scan', async (req, res) => {
 
     prospects.forEach(p => {
       p.secteur = secteur;
-      // Tag client selon la clé utilisée
-      if (isAdmin) {
-        p.client = 'IKREET';
-      } else {
-        // Extraire le nom du client depuis la clé : ikreet-speedcourse-xxxx
-        const parts = authHeader.split('-');
-        p.client = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : 'Client';
-      }
+      p.client = nomClient;
     });
 
     await envoyerSequence(prospects);
-    console.log(`✅ Scan terminé — ${prospects.length} prospects — Client: ${prospects[0]?.client}`);
+    console.log(`✅ Scan terminé — ${prospects.length} prospects — Client: ${nomClient}`);
+
   } catch (err) {
     console.error('❌ Erreur scan:', err.message);
   }
 });
-const { genererClient } = require('./services/onboarding');
 
 // ── Route onboarding client ──
 app.post('/admin/generer-client', async (req, res) => {
@@ -183,7 +169,6 @@ app.post('/admin/generer-client', async (req, res) => {
   if (authHeader !== process.env.APP_SECRET) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
-
   try {
     const config = await genererClient(req.body);
     console.log(`✅ Client généré : ${config.entreprise}`);
@@ -194,7 +179,7 @@ app.post('/admin/generer-client', async (req, res) => {
   }
 });
 
-// ── Démarrer le cron ──
+// ── Démarrer les crons ──
 demarrerCron();
 demarrerScanCron();
 
